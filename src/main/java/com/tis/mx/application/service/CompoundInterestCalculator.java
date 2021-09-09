@@ -32,7 +32,7 @@ public interface CompoundInterestCalculator {
    */
   List<InvestmentYieldDto> createRevenueGrid(InitialInvestmentDto initialInvestment);
 
-  
+
   /**
    * Validate input.
    *

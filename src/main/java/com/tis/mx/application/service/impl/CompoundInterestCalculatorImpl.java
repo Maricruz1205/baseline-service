@@ -15,24 +15,54 @@ package com.tis.mx.application.service.impl;
 import com.tis.mx.application.dto.InitialInvestmentDto;
 import com.tis.mx.application.dto.InvestmentYieldDto;
 import com.tis.mx.application.service.CompoundInterestCalculator;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  * The Class CompoundInterestCalculatorImpl.
  */
+
 public class CompoundInterestCalculatorImpl implements CompoundInterestCalculator {
 
   /**
    * Creates the revenue grid.
    *
-   * @param initialInvestment the initial investment
+   * @param initialInvestmentDto the initial investment dto
    * @return the list
    */
   @Override
-  public List<InvestmentYieldDto> createRevenueGrid(InitialInvestmentDto initialInvestment) {
-    return null;
+  public List<InvestmentYieldDto> createRevenueGrid(InitialInvestmentDto initialInvestmentDto) {
+    Integer investmentYear = 0;
+    Double initialInvestment = 0.00;
+    Double yearlyInput = 0.00;
+    Double investmentYield = 0.00;
+    Double finalBalance = 0.00;
+
+    ArrayList<InvestmentYieldDto> investmentYieldList = new ArrayList<>();
+    double aux = 0.00;
+    for (int i = 0; i < initialInvestmentDto.getInvestmentYears(); i++) {
+      investmentYear = i + 1;
+      yearlyInput = initialInvestmentDto.getYearlyInput() + aux;
+      aux += yearlyInput * initialInvestmentDto.getYearlyInputIncrement() / 100;
+      aux = Math.ceil(aux);
+
+      if (i == 0) {
+        initialInvestment = initialInvestmentDto.getInitialInvestment();
+      } else if (i > 0) {
+        initialInvestment = finalBalance;
+      }
+
+      investmentYield =
+          (initialInvestment + yearlyInput) * initialInvestmentDto.getInvestmentYield();
+      finalBalance = initialInvestment + yearlyInput + investmentYield;
+      investmentYieldList.add(new InvestmentYieldDto(investmentYear, initialInvestment, yearlyInput,
+          investmentYield, finalBalance));
+    }
+
+    return investmentYieldList;
   }
 
+  
   /**
    * Validate input.
    *
@@ -41,7 +71,33 @@ public class CompoundInterestCalculatorImpl implements CompoundInterestCalculato
    */
   @Override
   public boolean validateInput(InitialInvestmentDto initialInvestment) {
-    return false;
+
+    this.setDefaults(initialInvestment);
+    boolean cumple = true;
+
+    cumple = cumple && (initialInvestment.getInitialInvestment() >= 1000);
+    cumple = cumple && (initialInvestment.getYearlyInput() >= 0.0);
+    cumple = cumple && (initialInvestment.getYearlyInputIncrement() >= 0);
+    cumple = cumple && (initialInvestment.getInvestmentYears() > 0.0);
+    cumple = cumple && (initialInvestment.getInvestmentYield() > 0.0);
+
+    return cumple;
   }
+
+  /**
+   * Sets the defaults.
+   *
+   * @param initialInvestment the new defaults
+   */
+  private void setDefaults(InitialInvestmentDto initialInvestment) {
+    Double yearlyInput = initialInvestment.getYearlyInput();
+    yearlyInput = yearlyInput == null ? 0.0 : yearlyInput;
+    initialInvestment.setYearlyInput(yearlyInput);
+
+    Integer yearlyInputIncrement = initialInvestment.getYearlyInputIncrement();
+    yearlyInputIncrement = yearlyInputIncrement == null ? 0 : yearlyInputIncrement;
+    initialInvestment.setYearlyInputIncrement(yearlyInputIncrement);
+  }
+
 
 }
